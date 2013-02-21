@@ -105,7 +105,27 @@ namespace test
 		{
 			lock (this)
 			{
-				// process here
+				Bitmap img_copy = new Bitmap(image);
+				Grayscale gray_filter = new Grayscale(0.2125, 0.7154, 0.0721);
+				img_copy = gray_filter.Apply(img_copy);
+				Threshold thresh = new Threshold(50);
+				img_copy = thresh.Apply(img_copy);
+				BlobCounter bc = new BlobCounter(img_copy);
+				Rectangle[] rects = bc.GetObjectsRectangles();
+				
+				Graphics g = videoSourcePlayer.CreateGraphics();
+				using (Pen p = new Pen(Color.Red))
+				{
+					foreach (Rectangle r in rects)
+					{
+						if (r.Width > 50 && r.Width < 100 && r.Height > 50 && r.Height < 100)
+						{
+							g.DrawRectangle(p,r);
+						}
+					}
+				}
+				
+				image = img_copy;
 			}
 		}
 		
