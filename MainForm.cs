@@ -23,143 +23,149 @@ using AForge.Imaging.Filters;
 
 namespace test
 {
-	
-	public partial class MainForm : Form
-	{
-		FilterInfoCollection videoDevices;
-		private IVideoSource videoSource = null;
-		
-		public MainForm()
-		{
-			InitializeComponent();
+    
+    public partial class MainForm : Form
+    {
+        FilterInfoCollection videoDevices;
+        private IVideoSource videoSource = null;
+        private int thresh_val;
+        private int min_size_val;
+        
+        public MainForm()
+        {
+            InitializeComponent();
 
-			try
-			{
+            try
+            {
                 // enumerate video devices
-                videoDevices = new FilterInfoCollection( FilterCategory.VideoInputDevice );
+                videoDevices = new FilterInfoCollection(FilterCategory.VideoInputDevice);
 
-                if ( videoDevices.Count == 0 )
-                    throw new ApplicationException( );
+                if (videoDevices.Count == 0)
+                    throw new ApplicationException();
 
                 devicesCombo.Items.Add("Select Source...");
                 // add all devices to combo
-                foreach ( FilterInfo device in videoDevices )
+                foreach (FilterInfo device in videoDevices)
                 {
-                    devicesCombo.Items.Add( device.Name );
+                    devicesCombo.Items.Add(device.Name);
                 }
             }
-            catch ( ApplicationException )
+            catch (ApplicationException)
             {
                 devicesCombo.Items.Add( "No local capture devices" );
                 devicesCombo.Enabled = false;
             }
 
             devicesCombo.SelectedIndex = 0;
-		}
-		
-		private void OpenVideoSource( IVideoSource source )
+        }
+        
+        private void OpenVideoSource(IVideoSource source)
         {
             this.Cursor = Cursors.WaitCursor;
             videoSourcePlayer.VideoSource = new AsyncVideoSource( source );
-            videoSourcePlayer.Start( );
+            videoSourcePlayer.Start();
             fpsTimer.Start();
             videoSource = source;
             this.Cursor = Cursors.Default;
         }
-		       
-		private void CloseVideoSource( )
+               
+        private void CloseVideoSource()
         {
             this.Cursor = Cursors.WaitCursor;
-            videoSourcePlayer.SignalToStop( );
+            videoSourcePlayer.SignalToStop();
 
-            for ( int i = 0; ( i < 50 ) && ( videoSourcePlayer.IsRunning ); i++ )
+            for (int i = 0;(i < 50) && (videoSourcePlayer.IsRunning); i++)
             {
-                Thread.Sleep( 100 );
+                Thread.Sleep(100);
             }
 
             if ( videoSourcePlayer.IsRunning )
             {
-                videoSourcePlayer.Stop( );
+                videoSourcePlayer.Stop();
             }
 
-            fpsTimer.Stop( );
+            fpsTimer.Stop();
             videoSourcePlayer.BorderColor = Color.Black;
             this.Cursor = Cursors.Default;
         }
-		
-		void FpsTimerTick(object sender, EventArgs e)
-		{
+        
+        void FpsTimerTick(object sender, EventArgs e)
+        {
+        	thresh_val = threshTrack.Value;
+        	min_size_val = minSizeTrack.Value;
             IVideoSource videoSource = videoSourcePlayer.VideoSource;
             if (videoSource != null)
             {
-            	fpsText.Text = "FPS:" + videoSource.FramesReceived.ToString();
+                fpsText.Text = "FPS:" + videoSource.FramesReceived.ToString();
             }
-		}
-		
-		void MainFormFormClosing(object sender, FormClosingEventArgs e)
-		{
-			CloseVideoSource();
-		}
-		
-		void VideoSourcePlayerNewFrame(object sender, ref Bitmap image)
-		{
-			lock (this)
-			{
-				Bitmap img_copy = new Bitmap(image);
-				Grayscale gray_filter = new Grayscale(0.2125, 0.7154, 0.0721);
-				img_copy = gray_filter.Apply(img_copy);
-				Threshold thresh = new Threshold(50);
-				img_copy = thresh.Apply(img_copy);
-				BlobCounter bc = new BlobCounter(img_copy);
-				Rectangle[] rects = bc.GetObjectsRectangles();
-				
-				Graphics g = videoSourcePlayer.CreateGraphics();
-				using (Pen p = new Pen(Color.Red))
-				{
-					foreach (Rectangle r in rects)
-					{
-						if (r.Width > 50 && r.Width < 100 && r.Height > 50 && r.Height < 100)
-						{
-							g.DrawRectangle(p,r);
-						}
-					}
-				}
-				
-				image = img_copy;
-			}
-		}
-		
-		void DevicesComboSelectedIndexChanged(object sender, EventArgs e)
-		{
-			if (devicesCombo.SelectedIndex == 0)
-			{
-				CloseVideoSource();
-				fpsText.Visible = false;
-				vidSettingsButton.Enabled = false;
-			}
-			else
-            {				
-				fpsText.Visible = true;
-				vidSettingsButton.Enabled = true;
-				VideoCaptureDevice videoSource = new VideoCaptureDevice(videoDevices[devicesCombo.SelectedIndex - 1].MonikerString);
-                OpenVideoSource( videoSource );
+        }
+        
+        void MainFormFormClosing(object sender, FormClosingEventArgs e)
+        {
+            CloseVideoSource();
+        }
+        
+        void VideoSourcePlayerNewFrame(object sender, ref Bitmap image)
+        {
+            lock (this)
+            {
+                Bitmap img_copy = new Bitmap(image);
+                Grayscale gray_filter = new Grayscale(0.2125, 0.7154, 0.0721);
+                img_copy = gray_filter.Apply(img_copy);
+                Threshold thresh = new Threshold(thresh_val);
+                img_copy = thresh.Apply(img_copy);
+                BlobCounter bc = new BlobCounter();
+                bc.FilterBlobs = true;
+                bc.MinHeight = min_size_val;
+                bc.MinWidth = min_size_val;
+                bc.MaxHeight = min_size_val + 50;
+                bc.MaxWidth = min_size_val + 50;
+                bc.ProcessImage(img_copy);
+                Rectangle[] rects = bc.GetObjectsRectangles();
+                
+                Graphics g = videoSourcePlayer.CreateGraphics();
+                using (Pen p = new Pen(Color.Red))
+                {
+                    foreach (Rectangle r in rects)
+                    {
+                    	g.DrawRectangle(p,r);
+                    	g.DrawString("a",new Font("Consolas",10),Brushes.Red,r.X,r.Y);
+                    }
+                }
+                image = img_copy;
             }
-			
-		}
-		
-		void VidSettingsButtonClick(object sender, EventArgs e)
-		{
-            if ( ( videoSource != null ) && ( videoSource is VideoCaptureDevice ) )
+        }
+        
+        void DevicesComboSelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (devicesCombo.SelectedIndex == 0)
+            {
+                CloseVideoSource();
+                fpsText.Visible = false;
+                vidSettingsButton.Enabled = false;
+            }
+            else
+            {                
+                fpsText.Visible = true;
+                vidSettingsButton.Enabled = true;
+                VideoCaptureDevice videoSource = new VideoCaptureDevice(videoDevices[devicesCombo.SelectedIndex - 1].MonikerString);
+                OpenVideoSource(videoSource);
+            }
+        }
+        
+        void VidSettingsButtonClick(object sender, EventArgs e)
+        {
+            if ((videoSource != null) && (videoSource is VideoCaptureDevice))
             {
                 try
                 {
-                    ( (VideoCaptureDevice) videoSource ).DisplayPropertyPage( this.Handle );
+                    ((VideoCaptureDevice)videoSource).DisplayPropertyPage(this.Handle);
                 }
-                catch ( NotSupportedException ex )
+                catch (NotSupportedException ex)
                 {
-                    MessageBox.Show( ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error );
+                    MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
-            }			
-		}
-	}
+            }            
+        }
+    }
 }

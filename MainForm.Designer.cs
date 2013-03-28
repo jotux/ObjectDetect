@@ -42,6 +42,14 @@ namespace test
 			this.devicesCombo = new System.Windows.Forms.ComboBox();
 			this.vidSettingsButton = new System.Windows.Forms.Button();
 			this.fpsText = new System.Windows.Forms.Label();
+			this.filterBox = new System.Windows.Forms.GroupBox();
+			this.label1 = new System.Windows.Forms.Label();
+			this.threshTrack = new System.Windows.Forms.TrackBar();
+			this.label2 = new System.Windows.Forms.Label();
+			this.minSizeTrack = new System.Windows.Forms.TrackBar();
+			this.filterBox.SuspendLayout();
+			((System.ComponentModel.ISupportInitialize)(this.threshTrack)).BeginInit();
+			((System.ComponentModel.ISupportInitialize)(this.minSizeTrack)).BeginInit();
 			this.SuspendLayout();
 			// 
 			// videoSourcePlayer
@@ -90,11 +98,63 @@ namespace test
 			this.fpsText.Text = "FPS:";
 			this.fpsText.Visible = false;
 			// 
+			// filterBox
+			// 
+			this.filterBox.Controls.Add(this.label2);
+			this.filterBox.Controls.Add(this.minSizeTrack);
+			this.filterBox.Controls.Add(this.label1);
+			this.filterBox.Controls.Add(this.threshTrack);
+			this.filterBox.Location = new System.Drawing.Point(658, 40);
+			this.filterBox.Name = "filterBox";
+			this.filterBox.Size = new System.Drawing.Size(241, 188);
+			this.filterBox.TabIndex = 13;
+			this.filterBox.TabStop = false;
+			this.filterBox.Text = "Filters";
+			// 
+			// label1
+			// 
+			this.label1.Location = new System.Drawing.Point(6, 20);
+			this.label1.Name = "label1";
+			this.label1.Size = new System.Drawing.Size(59, 23);
+			this.label1.TabIndex = 1;
+			this.label1.Text = "Threshold:";
+			// 
+			// threshTrack
+			// 
+			this.threshTrack.Location = new System.Drawing.Point(65, 16);
+			this.threshTrack.Maximum = 255;
+			this.threshTrack.Minimum = 1;
+			this.threshTrack.Name = "threshTrack";
+			this.threshTrack.Size = new System.Drawing.Size(164, 45);
+			this.threshTrack.TabIndex = 0;
+			this.threshTrack.TickStyle = System.Windows.Forms.TickStyle.None;
+			this.threshTrack.Value = 1;
+			// 
+			// label2
+			// 
+			this.label2.Location = new System.Drawing.Point(11, 46);
+			this.label2.Name = "label2";
+			this.label2.Size = new System.Drawing.Size(59, 23);
+			this.label2.TabIndex = 3;
+			this.label2.Text = "Min Size:";
+			// 
+			// minSizeTrack
+			// 
+			this.minSizeTrack.Location = new System.Drawing.Point(66, 42);
+			this.minSizeTrack.Maximum = 200;
+			this.minSizeTrack.Minimum = 1;
+			this.minSizeTrack.Name = "minSizeTrack";
+			this.minSizeTrack.Size = new System.Drawing.Size(164, 45);
+			this.minSizeTrack.TabIndex = 2;
+			this.minSizeTrack.TickStyle = System.Windows.Forms.TickStyle.None;
+			this.minSizeTrack.Value = 1;
+			// 
 			// MainForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(665, 540);
+			this.ClientSize = new System.Drawing.Size(911, 540);
+			this.Controls.Add(this.filterBox);
 			this.Controls.Add(this.fpsText);
 			this.Controls.Add(this.vidSettingsButton);
 			this.Controls.Add(this.devicesCombo);
@@ -102,8 +162,17 @@ namespace test
 			this.Name = "MainForm";
 			this.Text = "test";
 			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.MainFormFormClosing);
+			this.filterBox.ResumeLayout(false);
+			this.filterBox.PerformLayout();
+			((System.ComponentModel.ISupportInitialize)(this.threshTrack)).EndInit();
+			((System.ComponentModel.ISupportInitialize)(this.minSizeTrack)).EndInit();
 			this.ResumeLayout(false);
 		}
+		private System.Windows.Forms.TrackBar minSizeTrack;
+		private System.Windows.Forms.Label label2;
+		private System.Windows.Forms.TrackBar threshTrack;
+		private System.Windows.Forms.Label label1;
+		private System.Windows.Forms.GroupBox filterBox;
 		private System.Windows.Forms.Label fpsText;
 		private System.Windows.Forms.Button vidSettingsButton;
 		private System.Windows.Forms.ComboBox devicesCombo;
